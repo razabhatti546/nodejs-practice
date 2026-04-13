@@ -1,0 +1,24 @@
+{
+  "name": "express-practice",
+  "version": "1.0.0",
+  "description": "For the practice of backend ",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/razabhatti546/nodejs-practice.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/razabhatti546/nodejs-practice/issues"
+  },
+  "homepage": "https://github.com/razabhatti546/nodejs-practice#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
