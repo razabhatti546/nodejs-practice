@@ -1,35 +1,41 @@
-const express = require("express");
-const shopRouter = require("./routes/shop");
-const bodyParser = require("body-parser");
+require("dotenv").config();
 
-const db = require("./db/connection");
+const express = require("express");
+const db = require("./config/db");
+const initDb = require("./db/init");
+const routes = require("./routes");
+const notFound = require("./middlewares/notFound");
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const PORT = process.env.PORT || 3010;
 
-app.use("/shop", shopRouter);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/test-db", async (req, res) => {
+app.get("/health", async (req, res, next) => {
   try {
-    const result = await db.query("SELECT NOW()");
-    res.json({ message: "Database connection successful" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching products");
+    await db.query("SELECT NOW()");
+    res.json({ message: "Server and database are running" });
+  } catch (error) {
+    next(error);
   }
-  const sql = `CREATE TABLE IF NOT EXISTS products(
-   id SERIAL PRIMARY KEY,
-   name VARCHAR(255) NOT NULL,
-   price DECIMAL(10, 2) NOT NULL,
-   description TEXT
-  )`;
-  await db.query(sql);
 });
 
-app.use((req, res, next) => {
-  res.status(404).send("Page not found");
-  next();
-});
+app.use(routes);
+app.use(notFound);
+app.use(errorHandler);
 
-app.listen(3010);
+const startServer = async () => {
+  try {
+    await initDb();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start application:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
