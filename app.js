@@ -18,6 +18,13 @@ app.use("/test-db", async (req, res) => {
     console.error(err);
     res.status(500).send("Error fetching products");
   }
+  const sql = `CREATE TABLE IF NOT EXISTS products(
+   id SERIAL PRIMARY KEY,
+   name VARCHAR(255) NOT NULL,
+   price DECIMAL(10, 2) NOT NULL,
+   description TEXT
+  )`;
+  await db.query(sql);
 });
 
 app.use((req, res, next) => {
