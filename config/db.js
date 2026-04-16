@@ -5,7 +5,31 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  port: Number(process.env.DB_PORT),
 });
 
-module.exports = pool;
+const query = (text, params) => pool.query(text, params);
+
+const getClient = () => pool.connect();
+
+const connectDb = async () => {
+  const client = await getClient();
+
+  try {
+    await client.query("SELECT 1");
+  } finally {
+    client.release();
+  }
+};
+
+const closeDb = async () => {
+  await pool.end();
+};
+
+module.exports = {
+  pool,
+  query,
+  getClient,
+  connectDb,
+  closeDb,
+};

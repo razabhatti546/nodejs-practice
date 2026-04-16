@@ -4,3 +4,11 @@ CREATE TABLE products (
     price DECIMAL(10, 2) NOT NULL,
     quantity INTEGER NOT NULL DEFAULT 0
 )
+
+
+CREATE TABLE users(
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+)

@@ -41,9 +41,21 @@ const deleteProduct = async (id) => {
   return result.rows[0];
 };
 
+const getProductById = async (id) => {
+  const result = await db.query(
+    `SELECT id, name, price, quantity
+     FROM products
+     WHERE id = $1`,
+    [id],
+  );
+
+  return result.rows[0];
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
   updateProduct,
   deleteProduct,
+  getProductById,
 };

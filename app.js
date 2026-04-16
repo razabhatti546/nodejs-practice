@@ -1,8 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
-const db = require("./config/db");
-const initDb = require("./db/init");
+const { connectDb, closeDb } = require("./config/db");
 const routes = require("./routes");
 const notFound = require("./middlewares/notFound");
 const errorHandler = require("./middlewares/errorHandler");
@@ -19,7 +18,7 @@ app.use(errorHandler);
 
 const startServer = async () => {
   try {
-    await initDb();
+    await connectDb();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
@@ -28,5 +27,15 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+process.on("SIGINT", async () => {
+  await closeDb();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  await closeDb();
+  process.exit(0);
+});
 
 startServer();

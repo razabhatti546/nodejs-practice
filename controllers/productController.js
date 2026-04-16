@@ -86,9 +86,30 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
+const getProductById = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const product = await productModel.getProductById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    return res.json(product);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
   updateProduct,
   deleteProduct,
+  getProductById,
 };
