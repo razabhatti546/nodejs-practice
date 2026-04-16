@@ -1,28 +1,14 @@
 const db = require("../config/db");
+const createProductsTable = require("./schema/products");
+const createUsersTable = require("./schema/users");
 
 const initDb = async () => {
   const client = await db.getClient();
 
   try {
     await client.query("BEGIN");
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
-        quantity INTEGER NOT NULL DEFAULT 0
-      )
-    `);
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(255) NOT NULL UNIQUE,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL
-      )
-    `);
+    await createProductsTable(client);
+    await createUsersTable(client);
 
     await client.query("COMMIT");
   } catch (error) {
