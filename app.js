@@ -4,7 +4,7 @@ const express = require("express");
 const { connectDb, closeDb } = require("./config/db");
 const routes = require("./routes");
 const notFound = require("./middlewares/notFound");
-const errorHandler = require("./middlewares/errorHandler");
+const { globalErrorMiddleware } = require("./middlewares/errorHandler");
 
 const app = express();
 const PORT = process.env.PORT || 3010;
@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(routes);
 app.use(notFound);
-app.use(errorHandler);
+app.use(globalErrorMiddleware);
 
 const startServer = async () => {
   try {

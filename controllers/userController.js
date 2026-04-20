@@ -87,9 +87,26 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const getUserById = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await userModel.getUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.json(user);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createUser,
   getUsers,
   updateUser,
   deleteUser,
+  getUserById,
 };

@@ -1,13 +1,21 @@
-const errorHandler = (err, req, res, next) => {
-  console.error(err);
+const errorHandler = (fn) => (req, res, next) => {
+  return Promise.resolve(fn(req, res, next)).catch(next);
+};
 
-  if (res.headersSent) {
-    return next(err);
-  }
-
-  return res.status(500).json({
-    message: "Internal server error",
+const globalErrorMiddleware = (error, req, res, next) => {
+  console.log("###globalErrorMiddleware###");
+  console.log(error?.response?.data ?? error);
+  console.log("========================================");
+  return res.status(error.status || 500).json({
+    error: {
+      status: error.status,
+      message: error.status === 500 ? "Internal server error" : error.message,
+      success: false,
+    },
   });
 };
 
-module.exports = errorHandler;
+module.exports = {
+  errorHandler,
+  globalErrorMiddleware,
+};

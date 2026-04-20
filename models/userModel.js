@@ -18,6 +18,14 @@ const createUser = async ({ username, email, password_hash }) => {
   return result.rows[0];
 };
 
+const getUserById = async (id) => {
+  const result = await db.query(
+    `SELECT id, username, email FROM users WHERE id = $1`,
+    [id],
+  );
+  return result.rows[0];
+};
+
 const updateUser = async (id, { username, email, password_hash }) => {
   const result = await db.query(
     `UPDATE users
@@ -46,4 +54,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getUserById,
 };
