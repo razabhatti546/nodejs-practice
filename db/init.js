@@ -22,7 +22,6 @@ const initDb = async () => {
 if (require.main === module) {
   initDb()
     .then(() => {
-      console.log("Database schema initialized successfully");
       return db.closeDb();
     })
     .catch(async (error) => {

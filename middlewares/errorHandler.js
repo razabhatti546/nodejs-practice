@@ -3,14 +3,32 @@ const errorHandler = (fn) => (req, res, next) => {
 };
 
 const globalErrorMiddleware = (error, req, res, next) => {
+  const statusCode = error.statusCode || error.status || 500;
+  const isProduction = process.env.NODE_ENV === "production";
+
   console.log("###globalErrorMiddleware###");
-  console.log(error?.response?.data ?? error);
+  console.log({
+    message: error.message,
+    statusCode,
+    path: req.originalUrl,
+    method: req.method,
+    details: error.details,
+  });
   console.log("========================================");
-  return res.status(error.status || 500).json({
+
+  if (statusCode === 500) {
+    console.error(error);
+  }
+
+  return res.status(statusCode).json({
     error: {
-      status: error.status,
-      message: error.status === 500 ? "Internal server error" : error.message,
+      status: statusCode,
+      message:
+        statusCode === 500 && isProduction
+          ? "Internal server error"
+          : error.message,
       success: false,
+      ...(error.details ? { details: error.details } : {}),
     },
   });
 };
