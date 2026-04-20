@@ -6,16 +6,6 @@ const globalErrorMiddleware = (error, req, res, next) => {
   const statusCode = error.statusCode || error.status || 500;
   const isProduction = process.env.NODE_ENV === "production";
 
-  console.log("###globalErrorMiddleware###");
-  console.log({
-    message: error.message,
-    statusCode,
-    path: req.originalUrl,
-    method: req.method,
-    details: error.details,
-  });
-  console.log("========================================");
-
   if (statusCode === 500) {
     console.error(error);
   }
