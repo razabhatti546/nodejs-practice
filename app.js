@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 3010;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(routes);
 app.use(globalErrorMiddleware);
 app.use(notFound);

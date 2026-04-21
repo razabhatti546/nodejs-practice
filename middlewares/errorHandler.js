@@ -1,9 +1,6 @@
-const errorHandler = (fn) => (req, res, next) => {
-  return Promise.resolve(fn(req, res, next)).catch(next);
-};
-
 const globalErrorMiddleware = (error, req, res, next) => {
-  const statusCode = error.statusCode || error.status || 500;
+  console.log(error);
+  const statusCode = error.statusCode;
   const isProduction = process.env.NODE_ENV === "production";
 
   if (statusCode === 500) {
@@ -18,12 +15,10 @@ const globalErrorMiddleware = (error, req, res, next) => {
           ? "Internal server error"
           : error.message,
       success: false,
-      ...(error.details ? { details: error.details } : {}),
     },
   });
 };
 
 module.exports = {
-  errorHandler,
   globalErrorMiddleware,
 };
