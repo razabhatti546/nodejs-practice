@@ -1,111 +1,62 @@
-const userModel = require("../models/userModel");
+import {
+  createUser as createUserRecord,
+  deleteUser as deleteUserRecord,
+  getAllUsers,
+  getUserById as findUserById,
+  updateUser as updateUserRecord,
+} from "../models/userModel.js";
+import AppError from "../utils/AppError.js";
 
-const getUsers = async (req, res, next) => {
-  try {
-    const users = await userModel.getAllUsers();
-    res.json(users);
-  } catch (error) {
-    next(error);
+const getUserInput = ({ username, email, password_hash } = {}) => {
+  if (!username || !email || !password_hash) {
+    throw new AppError("username, email and password_hash are required", 400);
   }
+
+  return { username, email, password_hash };
 };
 
-const createUser = async (req, res, next) => {
-  try {
-    const { username, email, password_hash } = req.body;
-
-    if (!username || !email || !password_hash) {
-      return res.status(400).json({
-        message: "username, email and password are required",
-      });
-    }
-
-    const newUser = await userModel.createUser({
-      username,
-      email,
-      password_hash,
-    });
-    return res.status(201).json(newUser);
-  } catch (error) {
-    return res.status(500).json({
-      message: error,
-    });
-  }
+export const getUsers = async (req, res) => {
+  const users = await getAllUsers();
+  res.json(users);
 };
 
-const updateUser = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { username, email, password_hash } = req.body;
+export const createUser = async (req, res) => {
+  const userInput = getUserInput(req.body);
+  const user = await createUserRecord(userInput);
 
-    if (!username || !email || !password_hash) {
-      return res.status(400).json({
-        message: "username, email and password are required",
-      });
-    }
-
-    const updatedUser = await userModel.updateUser(id, {
-      username,
-      email,
-      password_hash,
-    });
-
-    if (!updatedUser) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    return res.json(updatedUser);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
-  }
+  res.status(201).json(user);
 };
 
-const deleteUser = async (req, res, next) => {
-  const { id } = req.params;
+export const updateUser = async (req, res) => {
+  const userInput = getUserInput(req.body);
+  const user = await updateUserRecord(req.params.id, userInput);
 
-  try {
-    const deletedUser = await userModel.deleteUser(id);
-
-    if (!deletedUser) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Item deleted successfully",
-      user: deletedUser,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+  if (!user) {
+    throw new AppError("User not found", 404);
   }
+
+  res.json(user);
 };
 
-const getUserById = async (req, res, next) => {
-  const { id } = req.params;
-  try {
-    const user = await userModel.getUserById(id);
+export const deleteUser = async (req, res) => {
+  const user = await deleteUserRecord(req.params.id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    return res.json(user);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+  if (!user) {
+    throw new AppError("User not found", 404);
   }
+
+  res.status(200).json({
+    message: "User deleted successfully",
+    user,
+  });
 };
 
-module.exports = {
-  createUser,
-  getUsers,
-  updateUser,
-  deleteUser,
-  getUserById,
+export const getUserById = async (req, res) => {
+  const user = await findUserById(req.params.id);
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  res.json(user);
 };

@@ -1,6 +1,8 @@
-require("dotenv").config();
+import "dotenv/config";
 
-const { Pool } = require("pg");
+import pg from "pg";
+
+const { Pool } = pg;
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -28,10 +30,4 @@ const closeDb = async () => {
   await pool.end();
 };
 
-module.exports = {
-  pool,
-  query,
-  getClient,
-  connectDb,
-  closeDb,
-};
+export { pool, query, getClient, connectDb, closeDb };

@@ -1,17 +1,57 @@
-const authModel = require("../models/authModel");
-const bcrypt = require("bcrypt");
-const AppError = require("../utils/AppError");
-const saltRounds = 10;
+import bcrypt from "bcrypt";
+import {
+  signIn as findUserByCredentials,
+  signUp as createUserWithPassword,
+} from "../models/authModel.js";
+import AppError from "../utils/AppError.js";
+import { signToken } from "../utils/jwt.js";
 
-const signUp = async (req, res) => {
-  const { username, email, password } = req.body;
+const SALT_ROUNDS = 10;
 
-  if (!username || !email || !password) {
-    throw new AppError("username, email and password are required", 400);
+const buildAuthResponse = (user) => ({
+  token: signToken({ id: user.id }),
+  user,
+});
+
+const normalizeCredentials = (
+  { username, email, password } = {},
+  requireUsername,
+) => {
+  const normalizedUsername =
+    typeof username === "string" ? username.trim() : username;
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : email;
+
+  if (
+    (requireUsername && !normalizedUsername) ||
+    !normalizedEmail ||
+    typeof password !== "string" ||
+    !password
+  ) {
+    throw new AppError(
+      requireUsername
+        ? "username, email and password are required"
+        : "email and password are required",
+      400,
+    );
   }
 
-  const password_hash = await bcrypt.hash(password, saltRounds);
-  const result = await authModel.signUp({
+  return {
+    username: normalizedUsername,
+    email: normalizedEmail,
+    password,
+  };
+};
+
+export const signUp = async (req, res) => {
+  const { username, email, password } = normalizeCredentials(req.body, true);
+
+  if (password.length < 8) {
+    throw new AppError("Password must be at least 8 characters long", 400);
+  }
+
+  const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+  const user = await createUserWithPassword({
     username,
     email,
     password_hash,
@@ -19,25 +59,29 @@ const signUp = async (req, res) => {
 
   res.status(201).json({
     success: true,
-    data: result,
+    data: buildAuthResponse(user),
   });
 };
 
-const signIn = async (req, res) => {
-  const { email, password } = req.body;
+export const signIn = async (req, res) => {
+  const { email, password } = normalizeCredentials(req.body, false);
 
-  if (!email || !password) {
-    throw new AppError("email and password are required", 400);
-  }
+  const user = await findUserByCredentials({
+    email,
+    password,
+  });
 
-  const result = await authModel.signIn({ email, password });
   res.status(200).json({
     success: true,
-    data: result,
+    data: buildAuthResponse(user),
   });
 };
 
-module.exports = {
-  signUp,
-  signIn,
+export const me = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      user: req.user,
+    },
+  });
 };

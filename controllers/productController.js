@@ -1,115 +1,62 @@
-const productModel = require("../models/productModel");
+import {
+  createProduct as createProductRecord,
+  deleteProduct as deleteProductRecord,
+  getAllProducts,
+  getProductById as findProductById,
+  updateProduct as updateProductRecord,
+} from "../models/productModel.js";
+import AppError from "../utils/AppError.js";
 
-const getProducts = async (req, res, next) => {
-  try {
-    const products = await productModel.getAllProducts();
-    res.json(products);
-  } catch (error) {
-    next(error);
+const getProductInput = ({ name, price, quantity } = {}) => {
+  if (!name || price === undefined || quantity === undefined) {
+    throw new AppError("name, price and quantity are required", 400);
   }
+
+  return { name, price, quantity };
 };
 
-const createProduct = async (req, res, next) => {
-  try {
-    const { name, price, quantity } = req.body;
-
-    if (!name || price === undefined || quantity === undefined) {
-      return res.status(400).json({
-        message: "name, price and quantity are required",
-      });
-    }
-
-    const newProduct = await productModel.createProduct({
-      name,
-      price,
-      quantity,
-    });
-    return res.status(201).json(newProduct);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
-  }
+export const getProducts = async (req, res) => {
+  const products = await getAllProducts();
+  res.json(products);
 };
 
-const updateProduct = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { name, price, quantity } = req.body;
+export const createProduct = async (req, res) => {
+  const productInput = getProductInput(req.body);
+  const product = await createProductRecord(productInput);
 
-    if (!name || price === undefined || quantity === undefined) {
-      return res.status(400).json({
-        message: "name, price and quantity are required",
-      });
-    }
-
-    const updatedProduct = await productModel.updateProduct(id, {
-      name,
-      price,
-      quantity,
-    });
-
-    if (!updatedProduct) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
-    }
-
-    return res.json(updatedProduct);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
-  }
+  res.status(201).json(product);
 };
 
-const deleteProduct = async (req, res, next) => {
-  const { id } = req.params;
+export const updateProduct = async (req, res) => {
+  const productInput = getProductInput(req.body);
+  const product = await updateProductRecord(req.params.id, productInput);
 
-  try {
-    const deletedProduct = await productModel.deleteProduct(id);
-
-    if (!deletedProduct) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Item deleted successfully",
-      product: deletedProduct,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+  if (!product) {
+    throw new AppError("Product not found", 404);
   }
+
+  res.json(product);
 };
 
-const getProductById = async (req, res, next) => {
-  const { id } = req.params;
+export const deleteProduct = async (req, res) => {
+  const product = await deleteProductRecord(req.params.id);
 
-  try {
-    const product = await productModel.getProductById(id);
-
-    if (!product) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
-    }
-
-    return res.json(product);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+  if (!product) {
+    throw new AppError("Product not found", 404);
   }
+
+  res.status(200).json({
+    message: "Product deleted successfully",
+    product,
+  });
 };
 
-module.exports = {
-  createProduct,
-  getProducts,
-  updateProduct,
-  deleteProduct,
-  getProductById,
+export const getProductById = async (req, res) => {
+  const product = await findProductById(req.params.id);
+
+  if (!product) {
+    throw new AppError("Product not found", 404);
+  }
+
+  res.json(product);
 };

@@ -9,4 +9,4 @@ const createUsersTable = async (db) => {
   `);
 };
 
-module.exports = createUsersTable;
+export default createUsersTable;

@@ -1,10 +1,10 @@
-require("dotenv").config();
+import "dotenv/config";
 
-const express = require("express");
-const { connectDb, closeDb } = require("./config/db");
-const routes = require("./routes");
-const notFound = require("./middlewares/notFound");
-const { globalErrorMiddleware } = require("./middlewares/errorHandler");
+import express from "express";
+import { connectDb, closeDb } from "./config/db.js";
+import routes from "./routes/index.js";
+import notFound from "./middlewares/notFound.js";
+import { globalErrorMiddleware } from "./middlewares/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3010;
@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3010;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);
-app.use(globalErrorMiddleware);
 app.use(notFound);
+app.use(globalErrorMiddleware);
 
 const startServer = async () => {
   try {

@@ -1,6 +1,5 @@
-const globalErrorMiddleware = (error, req, res, next) => {
-  console.log(error);
-  const statusCode = error.statusCode;
+const globalErrorMiddleware = (error, req, res, _next) => {
+  const statusCode = error.statusCode || 500;
   const isProduction = process.env.NODE_ENV === "production";
 
   if (statusCode === 500) {
@@ -19,6 +18,4 @@ const globalErrorMiddleware = (error, req, res, next) => {
   });
 };
 
-module.exports = {
-  globalErrorMiddleware,
-};
+export { globalErrorMiddleware };

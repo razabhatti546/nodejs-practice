@@ -1,32 +1,43 @@
-const db = require("../config/db");
-const bcrypt = require("bcrypt");
-const AppError = require("../utils/AppError");
+import bcrypt from "bcrypt";
+import { query } from "../config/db.js";
+import AppError from "../utils/AppError.js";
 
-const signUp = async ({ username, email, password_hash }) => {
-  const existingemail = await db.query(`SELECT id FROM users WHERE email = $1`, [
+export const signUp = async ({ username, email, password_hash }) => {
+  const existingEmail = await query(`SELECT id FROM users WHERE email = $1`, [
     email,
   ]);
-  if (existingemail.rows.length > 0) {
+  if (existingEmail.rows.length > 0) {
     throw new AppError("Email already exists", 409);
   }
 
-  const existingusername = await db.query(
+  const existingUsername = await query(
     `SELECT id FROM users WHERE username = $1`,
     [username],
   );
-  if (existingusername.rows.length > 0) {
+  if (existingUsername.rows.length > 0) {
     throw new AppError("Username already exists", 409);
   }
 
-  const result = await db.query(
-    `INSERT INTO users (username,email,password_hash) VALUES ($1, $2, $3) RETURNING id, username, email`,
-    [username, email, password_hash],
-  );
-  return result.rows[0];
+  try {
+    const result = await query(
+      `INSERT INTO users (username, email, password_hash)
+       VALUES ($1, $2, $3)
+       RETURNING id, username, email`,
+      [username, email, password_hash],
+    );
+
+    return result.rows[0];
+  } catch (error) {
+    if (error.code === "23505") {
+      throw new AppError("Email or username already exists", 409);
+    }
+
+    throw error;
+  }
 };
 
-const signIn = async ({ email, password }) => {
-  const result = await db.query(
+export const signIn = async ({ email, password }) => {
+  const result = await query(
     `SELECT id, username, email, password_hash FROM users WHERE email = $1`,
     [email],
   );
@@ -42,7 +53,11 @@ const signIn = async ({ email, password }) => {
   return { id: user.id, username: user.username, email: user.email };
 };
 
-module.exports = {
-  signUp,
-  signIn,
+export const findUserById = async (id) => {
+  const result = await query(
+    `SELECT id, username, email FROM users WHERE id = $1`,
+    [id],
+  );
+
+  return result.rows[0];
 };

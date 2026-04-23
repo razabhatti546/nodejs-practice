@@ -1,14 +1,14 @@
-const db = require("../config/db");
+import { query } from "../config/db.js";
 
-const getAllProducts = async () => {
-  const result = await db.query(
+export const getAllProducts = async () => {
+  const result = await query(
     "SELECT id, name, price, quantity FROM products ORDER BY id ASC",
   );
   return result.rows;
 };
 
-const createProduct = async ({ name, price, quantity }) => {
-  const result = await db.query(
+export const createProduct = async ({ name, price, quantity }) => {
+  const result = await query(
     `INSERT INTO products (name, price, quantity)
      VALUES ($1, $2, $3)
      RETURNING id, name, price, quantity`,
@@ -18,8 +18,8 @@ const createProduct = async ({ name, price, quantity }) => {
   return result.rows[0];
 };
 
-const updateProduct = async (id, { name, price, quantity }) => {
-  const result = await db.query(
+export const updateProduct = async (id, { name, price, quantity }) => {
+  const result = await query(
     `UPDATE products
      SET name = $1, price = $2, quantity = $3
      WHERE id = $4
@@ -30,8 +30,8 @@ const updateProduct = async (id, { name, price, quantity }) => {
   return result.rows[0];
 };
 
-const deleteProduct = async (id) => {
-  const result = await db.query(
+export const deleteProduct = async (id) => {
+  const result = await query(
     `DELETE FROM products
      WHERE id = $1
      RETURNING id, name, price, quantity`,
@@ -41,8 +41,8 @@ const deleteProduct = async (id) => {
   return result.rows[0];
 };
 
-const getProductById = async (id) => {
-  const result = await db.query(
+export const getProductById = async (id) => {
+  const result = await query(
     `SELECT id, name, price, quantity
      FROM products
      WHERE id = $1`,
@@ -50,12 +50,4 @@ const getProductById = async (id) => {
   );
 
   return result.rows[0];
-};
-
-module.exports = {
-  createProduct,
-  getAllProducts,
-  updateProduct,
-  deleteProduct,
-  getProductById,
 };
